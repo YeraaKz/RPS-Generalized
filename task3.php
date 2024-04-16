@@ -8,7 +8,7 @@ class KeyGenerator
 
     public function __construct()
     {
-        $this->key = random_bytes(32);
+        $this->key = strtoupper(bin2hex(random_bytes(32)));
     }
 
     public function getKey()
@@ -27,13 +27,34 @@ class HMAC
 
     public function generateHMAC($move)
     {
-        return hash_hmac('sha256', $move, $this->keyGenerator->getKey());
+        return strtoupper(hash_hmac('sha256', $move, $this->keyGenerator->getKey()));
     }
 }
 
 class Rules
 {
-    private $moves = ['Rock', 'Scissors', 'Paper'];
+    private $moves;
+
+    public function __construct($moves)
+    {
+        $this->moves = $moves;
+    }
+
+    public function determineWinner($userMoves, $computerMoves)
+    {
+        if(sign(($userMoves - $computerMoves + intdiv(count($this->moves), 2) + count($this->moves))
+                % count($this->moves) - intdiv(count($this->moves), 2)) < 0){
+            return 'Win';
+        }
+        else if(sign(($userMoves - $computerMoves + intdiv(count($this->moves), 2) + count($this->moves))
+            % count($this->moves) - intdiv(count($this->moves), 2)) > 0){
+            return 'Lose';
+        }
+        else{
+            return 'Draw';
+        }
+
+    }
 
     public function showRules()
     {
@@ -50,17 +71,7 @@ class Rules
             $row = [];
             $row[] = $this->moves[$i];
             for($j = 0; $j < $movesCount; $j++){
-                if(sign(($i - $j + intdiv($movesCount, 2) + $movesCount)
-                    % $movesCount - intdiv($movesCount, 2)) > 0){
-                    $row[] = 'Win';
-                }
-                else if(sign(($i - $j + intdiv($movesCount, 2) + $movesCount)
-                        % $movesCount - intdiv($movesCount, 2)) < 0){
-                    $row[] = 'Lose';
-                }
-                else{
-                    $row[] = 'Draw';
-                }
+                $row[] = $this->determineWinner($i, $j);
             }
             $table->addRow($row);
         }
@@ -69,10 +80,65 @@ class Rules
     }
 }
 
+class Game
+{
+    private $moves;
+    private $rules;
+    private $hmacGenerator;
+    private $keyGenerator;
 
-$rules = new Rules();
+    public function __construct($moves)
+    {
+        $this->hmacGenerator = new HMAC();
+        $this->keyGenerator = new KeyGenerator();
+        $this->moves = $moves;
+        $this->rules = new Rules($moves);
+    }
 
-echo $rules->showRules()->getTable();
+    public function startGame()
+    {
+        while(true){
+            $computerMoveIndex = mt_rand(0, count($this->moves));
+            $computerMove = $this->moves[$computerMoveIndex - 1];
+            echo "HMAC:" . $this->hmacGenerator->generateHMAC($computerMove) . "\n";
+            echo "Available moves:\n";
+            foreach ($this->moves as $key => $value){
+                echo $key + 1 . ' - ' . $value . "\n";
+            }
+            echo "0 - Exit \n";
+            echo "? - Help \n";
+            echo "Enter your move:\n";
+            $userMoveIndex = trim(fgets(STDIN));
+            if($userMoveIndex == 0){
+                break;
+            }
+            if($userMoveIndex == '?'){
+                echo $this->rules->showRules()->getTable();
+                continue;
+            }
+
+            $userMove = $this->moves[$userMoveIndex - 1];
+
+            echo "Your move: " . $userMove . "\n";
+            echo "Computer move: ". $computerMove . "\n";
+
+            if($this->rules->determineWinner($userMoveIndex, $computerMoveIndex) == 'Win'){
+                echo "You Win! \n";
+            }
+            else if($this->rules->determineWinner($userMoveIndex, $computerMoveIndex) == 'Lose'){
+                echo "You Lose! \n";
+            }
+            else{
+                echo "Draw! \n";
+            }
+            echo "HMAC key: ". $this->keyGenerator->getKey() . "\n";
+        }
+
+    }
+}
+
+$game = new Game(array_slice($argv,1));
+$game->startGame();
 
 function sign($n) {
     return ($n > 0) - ($n < 0);
