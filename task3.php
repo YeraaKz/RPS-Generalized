@@ -98,7 +98,7 @@ class Game
     public function startGame()
     {
         while(true){
-            $computerMoveIndex = mt_rand(0, count($this->moves));
+            $computerMoveIndex = mt_rand(1, count($this->moves));
             $computerMove = $this->moves[$computerMoveIndex - 1];
             echo "HMAC:" . $this->hmacGenerator->generateHMAC($computerMove) . "\n";
             echo "Available moves:\n";
@@ -135,6 +135,16 @@ class Game
         }
 
     }
+}
+
+if(($argc - 1) < 3){
+    echo "Error: Insufficient arguments. You need to pass at least three moves. Example: php script.php rock paper scissors\n";
+    exit;
+}
+
+if(($argc - 1) % 2 == 0){
+    echo "Error: Incorrect number of arguments. You need to pass an odd number of moves. Example: php script.php rock paper scissors lizard spock\n";
+    exit;
 }
 
 $game = new Game(array_slice($argv,1));
