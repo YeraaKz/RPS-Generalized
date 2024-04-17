@@ -113,7 +113,10 @@ class Game
                 break;
             }
             if($userMoveIndex == '?'){
-                echo $this->rules->showRules()->getTable();
+                echo $this->rules->showRules()->getTable(). "\n" ;
+                continue;
+            }
+            if(!array_key_exists($userMoveIndex - 1, $this->moves)){
                 continue;
             }
 
@@ -131,7 +134,7 @@ class Game
             else{
                 echo "Draw! \n";
             }
-            echo "HMAC key: ". $this->keyGenerator->getKey() . "\n";
+            echo "HMAC key: ". $this->keyGenerator->getKey() . "\n\n";
         }
 
     }
@@ -151,7 +154,7 @@ if(count($moves) !== count(array_unique($moves))){
     echo "Error: Duplicate moves detected. Each move must be unique. Example: php script.php rock paper scissors\n";
     exit;
 }
-echo count($moves);
+
 $game = new Game(array_slice($argv,1));
 $game->startGame();
 
