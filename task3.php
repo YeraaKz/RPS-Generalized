@@ -137,16 +137,21 @@ class Game
     }
 }
 
-if(($argc - 1) < 3){
+$moves = array_slice($argv, 1);
+
+if(count($moves) < 3){
     echo "Error: Insufficient arguments. You need to pass at least three moves. Example: php script.php rock paper scissors\n";
     exit;
 }
-
-if(($argc - 1) % 2 == 0){
+if(count($moves) % 2 == 0){
     echo "Error: Incorrect number of arguments. You need to pass an odd number of moves. Example: php script.php rock paper scissors lizard spock\n";
     exit;
 }
-
+if(count($moves) !== count(array_unique($moves))){
+    echo "Error: Duplicate moves detected. Each move must be unique. Example: php script.php rock paper scissors\n";
+    exit;
+}
+echo count($moves);
 $game = new Game(array_slice($argv,1));
 $game->startGame();
 
