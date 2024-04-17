@@ -6,14 +6,9 @@ class KeyGenerator
 {
     private $key;
 
-    public function __construct()
+    public function generateKey()
     {
-        $this->key = strtoupper(bin2hex(random_bytes(32)));
-    }
-
-    public function getKey()
-    {
-        return $this->key;
+        return $this->key = strtoupper(bin2hex(random_bytes(32)));;
     }
 }
 class HMAC
@@ -27,7 +22,7 @@ class HMAC
 
     public function generateHMAC($move)
     {
-        return strtoupper(hash_hmac('sha256', $move, $this->keyGenerator->getKey()));
+        return strtoupper(hash_hmac('sha256', $move, $this->keyGenerator->generateKey()));
     }
 }
 
@@ -134,7 +129,7 @@ class Game
             else{
                 echo "Draw! \n";
             }
-            echo "HMAC key: ". $this->keyGenerator->getKey() . "\n\n";
+            echo "HMAC key: ". $this->keyGenerator->generateKey() . "\n\n";
         }
 
     }
